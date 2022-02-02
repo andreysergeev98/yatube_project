@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %} {{slug}} {% endblock %} 
+{% block content %}
+
+<div class="container">
+  <h1>{{ group }}</h1>
+  <p>{{ group.description }}</p>
+
+  {% for post in posts  %}
+
+    <article>
+      <ul>
+        <li>{{ post.author }}</li>
+        <li>{{ post.pub_date }}</li>
+      </ul>      
+      <p>{{ post.text }}</p>         
+    </article>
+    {% if not forloop.last %}<hr>{% endif %}
+  
+  {% endfor %}
+  
+  
+
+  <!-- под последним постом нет линии -->
+</div>  
+
+{% endblock %} 
