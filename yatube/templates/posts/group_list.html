@@ -11,8 +11,8 @@
 
     <article>
       <ul>
-        <li>{{ post.author }}</li>
-        <li>дата публикации: {{ post.pub_date |date:"d E Y" }}</li>
+        <li>Автор: {{ post.author }}</li>
+        <li>дата публикации: {{ post.pub_date|date:"d E Y" }}</li>
       </ul>      
       <p>{{ post.text }}</p>         
     </article>
