@@ -98,8 +98,8 @@ def post_create(request):
             group = form.cleaned_data['group']
             text = form.cleaned_data['text']
 
-            post = Post.objects.create(author=author, group=group, text=text)
-            return redirect('posts:post_detail', post.pk)
+            Post.objects.create(author=author, group=group, text=text)
+            return redirect('posts:profile', username=author)
 
         context = {
             'form': form,
@@ -138,7 +138,7 @@ def post_edit(request, post_id):
                     group=group, text=text
                 )
 
-                return redirect('posts:profile', username=author)
+                return redirect('posts:post_detail', post_id=post_id)
 
             context = {
                 'form': form,
