@@ -150,10 +150,10 @@ def post_edit(request, post_id):
 
         form = PostForm(instance=post)
         context = {
-                'form': form,
-                'is_edit': is_edit,
-                'post_id': post_id
-            }
+            'form': form,
+            'is_edit': is_edit,
+            'post_id': post_id
+        }
         return render(request, 'posts/create_post.html', context)
     print(author)
     print(post.author)
