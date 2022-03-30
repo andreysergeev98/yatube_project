@@ -113,7 +113,7 @@ def post_create(request):
         'form': form,
         'is_edit': is_edit
     }
-    return render(request, 'posts/create_post.html', )
+    return render(request, 'posts/create_post.html', context)
 
 
 @login_required
@@ -157,4 +157,4 @@ def post_edit(request, post_id):
         return render(request, 'posts/create_post.html', context)
     print(author)
     print(post.author)
-    return redirect('posts:profile', username=post.author)
+    return redirect('posts:post_detail', post_id=post_id)
