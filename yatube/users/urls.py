@@ -22,6 +22,4 @@ urlpatterns = [
         PasswordResetView.as_view(),
         name='reset'
     ),
-
-    
-] 
+]

@@ -1,6 +1,5 @@
-from django.shortcuts import render
-
 from django.views.generic.base import TemplateView
+
 
 class AboutAuthorView(TemplateView):
     # В переменной template_name обязательно указывается имя шаблона,

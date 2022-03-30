@@ -14,7 +14,7 @@ def index(request):
     template = 'posts/index.html'
     post_list = Post.objects.all().order_by('-pub_date')
 
-    paginator = Paginator(post_list, 10) 
+    paginator = Paginator(post_list, 10)
 
     page_number = request.GET.get('page')
 
@@ -32,8 +32,7 @@ def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
     posts = group.posts.all()
 
-
-    paginator = Paginator(posts, 10) 
+    paginator = Paginator(posts, 10)
 
     page_number = request.GET.get('page')
 
@@ -85,6 +84,7 @@ def post_detail(request, post_id):
     }
     return render(request, 'posts/post_detail.html', context)
 
+
 @login_required
 def post_create(request):
 
@@ -92,7 +92,6 @@ def post_create(request):
     if request.method == 'POST':
 
         form = PostForm(request.POST)
-           
         if form.is_valid():
 
             author = request.user
@@ -100,14 +99,21 @@ def post_create(request):
             text = form.cleaned_data['text']
 
             Post.objects.create(author=author, group=group, text=text)
-     
             return redirect('posts:profile', username=author)
 
-        return render(request, 'posts/create_post.html', {'form': form, 'is_edit': is_edit})
+        context = {
+            'form': form,
+            'is_edit': is_edit
+        }
+        return render(request, 'posts/create_post.html', context)
 
     form = PostForm()
     print(User)
-    return render(request, 'posts/create_post.html', {'form': form, 'is_edit': is_edit})
+    context = {
+        'form': form,
+        'is_edit': is_edit
+    }
+    return render(request, 'posts/create_post.html', )
 
 
 @login_required
@@ -128,7 +134,10 @@ def post_edit(request, post_id):
                 group = form.cleaned_data['group']
                 text = form.cleaned_data['text']
 
-                Post.objects.filter(pk=post_id).update(group=group, text=text)                                         
+                Post.objects.filter(pk=post_id).update(
+                    group=group, text=text
+                )
+
                 return redirect('posts:profile', username=author)
 
             context = {
@@ -145,7 +154,6 @@ def post_edit(request, post_id):
                 'is_edit': is_edit,
                 'post_id': post_id
             }
-      
         return render(request, 'posts/create_post.html', context)
     print(author)
     print(post.author)
