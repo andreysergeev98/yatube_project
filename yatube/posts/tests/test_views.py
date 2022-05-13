@@ -31,17 +31,16 @@ class PostViewTest(TestCase):
         )
 
         cls.post_test = Post.objects.create(
-                author=cls.author,
-                text='Тестовый пост',
-                group=cls.group_second
-            )
+            author=cls.author,
+            text='Тестовый пост',
+            group=cls.group_second
+        )
 
         cls.post = Post.objects.create(
-                author=cls.author,
-                text='Тестовый пост',
-                group=cls.group
-
-            )
+            author=cls.author,
+            text='Тестовый пост',
+            group=cls.group
+        )
         for index in range(12):
             cls.index = Post.objects.create(
                 author=cls.author,

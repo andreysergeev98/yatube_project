@@ -54,7 +54,7 @@ class PostFormsTest(TestCase):
             follow=True
         )
 
-        self.assertEqual(Post.objects.count(), tasks_count+1)
+        self.assertEqual(Post.objects.count(), tasks_count + 1)
 
         self.assertTrue(
             Post.objects.filter(
@@ -73,7 +73,7 @@ class PostFormsTest(TestCase):
         }
 
         self.authorized_author.post(
-            reverse('posts:post_edit',  kwargs={'post_id': self.post.pk}),
+            reverse('posts:post_edit', kwargs={'post_id': self.post.pk}),
             data=form_data,
             follow=True
         )
