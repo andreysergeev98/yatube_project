@@ -7,11 +7,10 @@
         <aside class="col-12 col-md-3">
           <ul class="list-group list-group-flush">
             <li class="list-group-item">
-              Дата публикации: {{post.pub_date|date:"d E Y"}}
-            </li>
-            <!-- если у поста есть группа -->   
+              Дата публикации: {{ post.pub_date|date:"d E Y" }}
+            </li> 
               <li class="list-group-item">
-                Группа: <!-- Название группы -->
+                Группа:
 
                 {% if post.group %} 
                 <a href="{% url 'posts:group' post.group.slug %}">
@@ -24,7 +23,7 @@
                 Автор: {{ post.author }}
               </li>
               <li class="list-group-item d-flex justify-content-between align-items-center">
-              Всего постов автора:  <span >{{post_count}}</span>
+              Всего постов автора:  <span >{{ post_count }}</span>
             </li>
             <li class="list-group-item">
               <a href="{% url 'posts:profile' post.author %}">
@@ -35,9 +34,14 @@
         </aside>
         <article class="col-12 col-md-9">
           <p>
-           {{post.text}}
+           {{ post.text }}
           </p>
         </article>
       </div> 
     </main>
+
+    {% if user.pk == post.author.pk %}
+      <a href="{% url 'posts:post_edit' post.pk %}">Редактировать</a>
+    {% endif %}
+    
     {% endblock %} 
