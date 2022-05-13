@@ -1,8 +1,6 @@
 
-from ast import For
-from http import HTTPStatus
-from tokenize import group
 from django.contrib.auth import get_user_model
+
 from django.test import TestCase, Client
 
 from django.urls import reverse
@@ -50,51 +48,43 @@ class PostViewTest(TestCase):
                 text='Тестовый пост',
                 group=cls.group
             )
-        
-
 
     def setUp(self):
-        # Создаем неавторизованный клиент
         self.guest_client = Client()
-        # Создаем пользователя
-    
-        # Создаем второй клиент
         self.authorized_client = Client()
-        # Авторизуем пользователя
         self.authorized_client.force_login(self.user)
-
         self.authorized_author = Client()
         self.authorized_author.force_login(self.author)
 
-    
     def test_url_everyone_uses_correct_template(self):
         """Проверка шаблонов для общедоступных адресов."""
-        urls_status_code  = {
+
+        urls_status_code = {
             'posts/index.html': reverse('posts:main'),
-            'posts/group_list.html': reverse('posts:group', kwargs={'slug': self.group.slug}),
-            'posts/profile.html': reverse('posts:profile', kwargs={'username': self.user.username}),
-            'posts/post_detail.html': reverse('posts:post_detail', kwargs={'post_id': self.post.pk}),
+            'posts/group_list.html': reverse(
+                'posts:group', kwargs={'slug': self.group.slug}),
+            'posts/profile.html': reverse(
+                'posts:profile', kwargs={'username': self.user.username}),
+            'posts/post_detail.html': reverse(
+                'posts:post_detail', kwargs={'post_id': self.post.pk}),
             'posts/create_post.html': reverse('posts:post_create'),
-            
         }
         for template, address in urls_status_code.items():
             with self.subTest(address=address):
-                
                 response = self.authorized_client.get(address)
                 self.assertTemplateUsed(response, template)
 
     def test_url_authorized_uses_correct_template(self):
         """Проверка шаблонов для общедоступных адресов."""
-        urls_status_code  = {
-            'posts/create_post.html': reverse('posts:post_edit', kwargs={'post_id': self.post.pk}),    
+        urls_status_code = {
+            'posts/create_post.html': reverse(
+                'posts:post_edit', kwargs={'post_id': self.post.pk}),
         }
         for template, address in urls_status_code.items():
             with self.subTest(address=address):
-                
+
                 response = self.authorized_author.get(address)
                 self.assertTemplateUsed(response, template)
-
-
 
     def test_task_list_page_show_correct_context(self):
         """Шаблон task_list сформирован с правильным контекстом."""
@@ -105,50 +95,40 @@ class PostViewTest(TestCase):
         task_text_0 = first_object.text
         self.assertEqual(task_text_0, 'Тестовый пост')
 
-      
-
     def test_task_detail_pages_show_correct_context(self):
         """Шаблон task_detail сформирован с правильным контекстом."""
-        response = (self.authorized_client.
-            get(reverse('posts:post_detail', kwargs={'post_id': self.post.pk})))
+        response = (self.authorized_client.get(reverse(
+            'posts:post_detail', kwargs={'post_id': self.post.pk})))
         self.assertEqual(response.context.get('post').text, self.post.text)
         self.assertEqual(response.context.get('post_count'), 14)
 
-
     def test_home_page_show_correct_context(self):
         """Шаблон home сформирован с правильным контекстом."""
-        response = self.authorized_author.get(reverse('posts:post_create'), kwargs={'post_id': self.post.pk})
+        response = self.authorized_author.get(reverse(
+            'posts:post_create'), kwargs={'post_id': self.post.pk})
         # Словарь ожидаемых типов полей формы:
         # указываем, объектами какого класса должны быть поля формы
         form_fields = {
-            'text': forms.fields.CharField,    
-            'group': forms.models.ModelChoiceField,     
-        }        
+            'text': forms.fields.CharField,
+            'group': forms.models.ModelChoiceField,
+        }
 
-        # Проверяем, что типы полей формы в словаре context соответствуют ожиданиям
         for value, expected in form_fields.items():
             with self.subTest(value=value):
                 form_field = response.context.get('form').fields.get(value)
-                # Проверяет, что поле формы является экземпляром
-                # указанного класса
                 self.assertIsInstance(form_field, expected)
-
-
-
 
     def test_home_page_show_correct_context_editpost(self):
         """Шаблон home сформирован с правильным контекстом."""
-        response = (self.authorized_author.
-            get(reverse('posts:post_edit', kwargs={'post_id': self.post.pk})))
+        response = (self.authorized_author.get(reverse(
+            'posts:post_edit', kwargs={'post_id': self.post.pk})))
         # Словарь ожидаемых типов полей формы:
         # указываем, объектами какого класса должны быть поля формы
         form_fields = {
-            'text': forms.fields.CharField,    
-            'group': forms.models.ModelChoiceField,     
-        }        
+            'text': forms.fields.CharField,
+            'group': forms.models.ModelChoiceField,
+        }
 
-        print(response)
-        # Проверяем, что типы полей формы в словаре context соответствуют ожиданиям
         for value, expected in form_fields.items():
             with self.subTest(value=value):
                 form_field = response.context.get('form').fields.get(value)
@@ -156,22 +136,19 @@ class PostViewTest(TestCase):
                 # указанного класса
                 self.assertIsInstance(form_field, expected)
 
-
-    
     def test_first_page_contains_ten_records_main_page(self):
-        # Проверка: количество постов на первой странице равно 10. 
 
-        page_first  = {
+        page_first = {
             reverse('posts:main'),
-            # reverse('posts:group', kwargs={'slug': self.group.slug}),
-            reverse('posts:profile', kwargs={'username': self.author.username}),
-            
+            reverse(
+                'posts:profile', kwargs={'username': self.author.username}),
         }
 
-        page_second  = {
+        page_second = {
             reverse('posts:main') + '?page=2',
-            reverse('posts:profile', kwargs={'username': self.author.username}) + '?page=2',
-            
+            reverse(
+                'posts:profile', kwargs={
+                    'username': self.author.username}) + '?page=2',
         }
         for address in page_first:
             with self.subTest(address=address):
@@ -183,18 +160,13 @@ class PostViewTest(TestCase):
                 response = self.authorized_client.get(address)
                 self.assertEqual(len(response.context['page_obj']), 4)
 
-
-
-        
-
-
     def test_first_page_contains_ten_records_group(self):
-        response = (self.authorized_author.
-        get(reverse('posts:group', kwargs={'slug': self.group.slug})))
+        response = (self.authorized_author.get(
+            reverse('posts:group', kwargs={'slug': self.group.slug})))
         self.assertEqual(len(response.context['page_obj']), 10)
 
-
     def test_first_page_contains_ten_records_group_second(self):
-        response = (self.authorized_author.
-        get(reverse('posts:group', kwargs={'slug': self.group.slug}) + '?page=2'))
+        response = (self.authorized_author.get(
+            reverse('posts:group', kwargs={
+                'slug': self.group.slug}) + '?page=2'))
         self.assertEqual(len(response.context['page_obj']), 3)
