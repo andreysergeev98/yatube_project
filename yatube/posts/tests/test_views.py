@@ -1,13 +1,10 @@
 
+from django import forms
 from django.contrib.auth import get_user_model
-
-from django.test import TestCase, Client
-
+from django.test import Client, TestCase
 from django.urls import reverse
 
 from ..models import Group, Post
-
-from django import forms
 
 User = get_user_model()
 

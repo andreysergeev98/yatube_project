@@ -1,10 +1,10 @@
-
+from django.conf import settings
 from django.core.paginator import Paginator
 
 
 def paginator(request, posts):
 
-    paginator = Paginator(posts, 10)
+    paginator = Paginator(posts, settings.PAGINATOR_PAGE)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 

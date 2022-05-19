@@ -131,6 +131,8 @@ USE_L10N = True
 
 USE_TZ = True
 
+PAGINATOR_PAGE = 10
+
 
 LOGIN_URL = 'users:login'
 LOGIN_REDIRECT_URL = 'posts:main'

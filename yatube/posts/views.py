@@ -1,13 +1,8 @@
-from django.shortcuts import get_object_or_404, render
-
 from django.contrib.auth.decorators import login_required
-
-from django.shortcuts import redirect
-
-from .models import Group, Post, User
+from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import PostForm
-
+from .models import Group, Post, User
 from .utils import paginator
 
 
@@ -57,10 +52,7 @@ def profile(request, username):
 
 
 def post_detail(request, post_id):
-    # Здесь код запроса к модели и создание словаря контекста
-
     post = get_object_or_404(Post, pk=post_id)
-
     post_count = Post.objects.filter(author=post.author).count()
 
     context = {
@@ -72,21 +64,13 @@ def post_detail(request, post_id):
 
 @login_required
 def post_create(request):
-
     is_edit = False
-    if request.method == 'POST':
-        form = PostForm(request.POST or None)
-        if form.is_valid():
-            author = request.user
-            form.instance.author = author
-            form.save()
-            return redirect('posts:profile', username=author)
-
-        context = {
-            'form': form,
-            'is_edit': is_edit
-        }
-        return render(request, 'posts/create_post.html', context)
+    form = PostForm(request.POST or None)
+    if form.is_valid():
+        author = request.user
+        form.instance.author = author
+        form.save()
+        return redirect('posts:profile', username=author)
 
     form = PostForm()
     context = {
@@ -98,35 +82,13 @@ def post_create(request):
 
 @login_required
 def post_edit(request, post_id):
-
     post = get_object_or_404(Post, pk=post_id)
     author = request.user
     is_edit = True
-
-    if post.author == author:
-
-        if request.method == 'POST':
-
-            form = PostForm(request.POST or None)
-
-            if form.is_valid():
-
-                author = request.user
-                Post.objects.filter(pk=post_id).update(
-                    group=form.instance.group,
-                    text=form.instance.text
-                )
-
-                return redirect('posts:post_detail', post_id=post_id)
-
-            context = {
-                'form': form,
-                'is_edit': is_edit,
-                'post_id': post_id
-            }
-
-            return render(request, 'posts/create_post.html', context)
-
+    if not post.author == author:
+        return redirect('posts:post_detail', post_id=post_id)
+    form = PostForm(request.POST or None, instance=post)
+    if not form.is_valid():
         form = PostForm(instance=post)
         context = {
             'form': form,
@@ -134,4 +96,9 @@ def post_edit(request, post_id):
             'post_id': post_id
         }
         return render(request, 'posts/create_post.html', context)
+
+    author = request.user
+    form.instance.author = author
+    obj = form.save(commit=False)
+    obj.save()
     return redirect('posts:post_detail', post_id=post_id)
