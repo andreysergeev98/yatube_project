@@ -106,6 +106,7 @@ class PostViewTest(TestCase):
         # указываем, объектами какого класса должны быть поля формы
         form_fields = {
             'text': forms.fields.CharField,
+            'image': forms.fields.ImageField,
             'group': forms.models.ModelChoiceField,
         }
 
@@ -122,6 +123,7 @@ class PostViewTest(TestCase):
         # указываем, объектами какого класса должны быть поля формы
         form_fields = {
             'text': forms.fields.CharField,
+            'image': forms.fields.ImageField,
             'group': forms.models.ModelChoiceField,
         }
 
@@ -166,3 +168,21 @@ class PostViewTest(TestCase):
             reverse('posts:group', kwargs={
                 'slug': self.group.slug}) + '?page=2'))
         self.assertEqual(len(response.context['page_obj']), 3)
+
+    def test_comment_add(self):
+        form_data = {
+            'author': self.author,
+            'post': self.post,
+            'text': 'новый коммент'
+        }
+
+        self.authorized_client.post(
+            reverse('posts:add_comment', kwargs={'post_id': self.post.pk}),
+            data=form_data,
+            follow=True
+        )
+
+        response = (self.authorized_client.get(reverse(
+            'posts:post_detail', kwargs={'post_id': self.post.pk})))
+
+        self.assertEqual(response.context['comments'].count(), 1)

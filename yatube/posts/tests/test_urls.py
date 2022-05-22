@@ -89,10 +89,11 @@ class PostUrlTest(TestCase):
         """Проверка шаблонов для общедоступных адресов."""
         urls_status_code = {
             reverse('posts:post_create'),
+            reverse('posts:add_comment', kwargs={'post_id': self.post.pk}),
         }
         for address in urls_status_code:
             with self.subTest(address=address):
-                response = self.guest_client.get(address, follow=True)
+                response = self.authorized_client.get(address, follow=True)
                 self.assertEqual(
                     response.status_code,
                     HTTPStatus.OK
