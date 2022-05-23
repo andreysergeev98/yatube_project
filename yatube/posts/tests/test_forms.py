@@ -82,6 +82,13 @@ class PostFormsTest(TestCase):
         self.assertEqual(len(self.form.fields), 3)
         self.assertEqual(Post.objects.count(), tasks_count + 1)
 
+        response = (self.authorized_author.get(reverse(
+            'posts:post_edit', kwargs={'post_id': self.post.pk})))
+
+        self.assertIn("text", response.context['form'].fields)
+        self.assertIn("group", response.context['form'].fields)
+        self.assertEqual(len(response.context['form'].fields), 3)
+
         self.assertTrue(
             Post.objects.filter(
                 group=self.group.pk,
@@ -113,15 +120,18 @@ class PostFormsTest(TestCase):
             'group': f'{self.group.pk}',
         }
 
-        self.assertIn("text", self.form.fields)
-        self.assertIn("group", self.form.fields)
-        self.assertEqual(len(self.form.fields), 3)
-
         self.authorized_author.post(
             reverse('posts:post_edit', kwargs={'post_id': self.post.pk}),
             data=form_data,
             follow=True
         )
+
+        response = (self.authorized_author.get(reverse(
+            'posts:post_edit', kwargs={'post_id': self.post.pk})))
+
+        self.assertIn("text", response.context['form'].fields)
+        self.assertIn("group", response.context['form'].fields)
+        self.assertEqual(len(response.context['form'].fields), 3)
 
         self.assertEqual(Post.objects.count(), tasks_count)
 
