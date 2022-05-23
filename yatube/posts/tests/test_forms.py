@@ -19,7 +19,6 @@ class PostFormsTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
         cls.user = User.objects.create_user(username='testnoname')
         cls.author = User.objects.create_user(username='auth')
         cls.group = Group.objects.create(
@@ -36,6 +35,11 @@ class PostFormsTest(TestCase):
         )
 
         cls.form = PostForm()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def setUp(self):
         self.guest_client = Client()
@@ -73,6 +77,9 @@ class PostFormsTest(TestCase):
             follow=True
         )
 
+        self.assertIn("text", self.form.fields)
+        self.assertIn("group", self.form.fields)
+        self.assertEqual(len(self.form.fields), 3)
         self.assertEqual(Post.objects.count(), tasks_count + 1)
 
         self.assertTrue(
@@ -105,6 +112,10 @@ class PostFormsTest(TestCase):
             'image': uploaded,
             'group': f'{self.group.pk}',
         }
+
+        self.assertIn("text", self.form.fields)
+        self.assertIn("group", self.form.fields)
+        self.assertEqual(len(self.form.fields), 3)
 
         self.authorized_author.post(
             reverse('posts:post_edit', kwargs={'post_id': self.post.pk}),
