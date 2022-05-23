@@ -106,7 +106,6 @@ class PostViewTest(TestCase):
         # указываем, объектами какого класса должны быть поля формы
         form_fields = {
             'text': forms.fields.CharField,
-            'image': forms.fields.ImageField,
             'group': forms.models.ModelChoiceField,
         }
 
@@ -123,7 +122,6 @@ class PostViewTest(TestCase):
         # указываем, объектами какого класса должны быть поля формы
         form_fields = {
             'text': forms.fields.CharField,
-            'image': forms.fields.ImageField,
             'group': forms.models.ModelChoiceField,
         }
 

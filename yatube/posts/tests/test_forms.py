@@ -3,7 +3,6 @@ import tempfile
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
@@ -50,24 +49,9 @@ class PostFormsTest(TestCase):
 
     def test_create_post(self):
         tasks_count = Post.objects.count()
-        small_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x02\x00'
-            b'\x01\x00\x80\x00\x00\x00\x00\x00'
-            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
-            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
-            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
-            b'\x0A\x00\x3B'
-        )
-        uploaded = SimpleUploadedFile(
-            name='small.gif',
-            content=small_gif,
-            content_type='image/gif'
-        )
-
         form_data = {
             'author': self.author,
             'text': 'Тестовый заголовок',
-            'image': uploaded,
             'group': f'{self.group.pk}',
         }
 
@@ -77,9 +61,6 @@ class PostFormsTest(TestCase):
             follow=True
         )
 
-        self.assertIn("text", self.form.fields)
-        self.assertIn("group", self.form.fields)
-        self.assertEqual(len(self.form.fields), 3)
         self.assertEqual(Post.objects.count(), tasks_count + 1)
 
         response = (self.authorized_author.get(reverse(
@@ -87,36 +68,20 @@ class PostFormsTest(TestCase):
 
         self.assertIn("text", response.context['form'].fields)
         self.assertIn("group", response.context['form'].fields)
-        self.assertEqual(len(response.context['form'].fields), 3)
+        self.assertEqual(len(response.context['form'].fields), 2)
 
         self.assertTrue(
             Post.objects.filter(
                 group=self.group.pk,
                 text='Тестовый заголовок',
-                image='posts/small.gif'
             ).exists()
         )
 
     def test_edit_post(self):
         tasks_count = Post.objects.count()
-        small_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x02\x00'
-            b'\x01\x00\x80\x00\x00\x00\x00\x00'
-            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
-            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
-            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
-            b'\x0A\x00\x3B'
-        )
-        uploaded = SimpleUploadedFile(
-            name='small_copy.gif',
-            content=small_gif,
-            content_type='image/gif'
-        )
-
         form_data = {
             'author': self.author,
             'text': 'Тестовый заголовок отредактированный',
-            'image': uploaded,
             'group': f'{self.group.pk}',
         }
 
@@ -131,7 +96,7 @@ class PostFormsTest(TestCase):
 
         self.assertIn("text", response.context['form'].fields)
         self.assertIn("group", response.context['form'].fields)
-        self.assertEqual(len(response.context['form'].fields), 3)
+        self.assertEqual(len(response.context['form'].fields), 2)
 
         self.assertEqual(Post.objects.count(), tasks_count)
 
@@ -139,6 +104,5 @@ class PostFormsTest(TestCase):
             Post.objects.filter(
                 group=self.group.pk,
                 text='Тестовый заголовок отредактированный',
-                image='posts/small_copy.gif'
             ).exists()
         )
