@@ -12,16 +12,22 @@ class PostModelTest(TestCase):
         super().setUpClass()
         cls.user = User.objects.create_user(username='auth')
         cls.group = Group.objects.create(
-            title='Тестовая группа',
+            title='Тестовая группа adwad',
             slug='Тестовый слаг',
             description='Тестовое описание',
         )
         cls.post = Post.objects.create(
             author=cls.user,
-            text='Тестовая пост',
+            text='Тестовый пост с описанием',
+        )
+        cls.post = Post.objects.create(
+            author=cls.user,
+            text='Тестовый пост с описанием',
         )
 
     def test_models_have_correct_object_names(self):
-        post = PostModelTest.post
-        expected_object_name = post.text
-        self.assertEqual(expected_object_name, str(post))
+        post = self.post
+        self.assertEqual(str(post), self.post.text[:15])
+
+        group = self.group
+        self.assertEqual(str(group), self.group.title)

@@ -1,4 +1,3 @@
-
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
@@ -27,69 +26,69 @@ class PostUrlTest(TestCase):
         )
 
     def setUp(self):
-        self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
         self.authorized_author = Client()
         self.authorized_author.force_login(self.author)
 
     def test_url_everyone_uses_correct_template(self):
-        """Проверка шаблонов для общедоступных адресов."""
+        """Проверка шаблонов для адресов."""
         urls_status_code = {
-            'posts/index.html': reverse('posts:main'),
-            'posts/group_list.html': reverse(
-                'posts:group', kwargs={'slug': self.group.slug}),
-            'posts/profile.html': reverse(
-                'posts:profile', kwargs={'username': self.user.username}),
-            'posts/post_detail.html': reverse(
-                'posts:post_detail', kwargs={'post_id': self.post.pk}),
-            'posts/create_post.html': reverse('posts:post_create'),
+            'posts/index.html': '/',
+            'posts/group_list.html': f'/group/{self.group.slug}/',
+            'posts/profile.html': f'/profile/{self.user.username}/',
+            'posts/post_detail.html': f'/posts/{self.post.pk}/',
         }
+        urls_status_code_author = {
+            'posts/create_post.html': f'/posts/{self.post.pk}/edit/',
+        }
+        urls_status_code_authorized = {
+            'posts/create_post.html': '/create/',
+        }
+
         for template, address in urls_status_code.items():
             with self.subTest(address=address):
-                response = self.authorized_client.get(address)
+                response = self.client.get(address)
                 self.assertTemplateUsed(response, template)
 
-    def test_url_authorized_uses_correct_template(self):
-        """Проверка шаблонов для общедоступных адресов."""
-        urls_status_code = {
-            'posts/create_post.html': reverse(
-                'posts:post_edit', kwargs={'post_id': self.post.pk}),
-        }
-        for template, address in urls_status_code.items():
+        for template, address in urls_status_code_author.items():
             with self.subTest(address=address):
-
                 response = self.authorized_author.get(address)
+                self.assertTemplateUsed(response, template)
+
+        for template, address in urls_status_code_authorized.items():
+            with self.subTest(address=address):
+                response = self.authorized_client.get(address)
                 self.assertTemplateUsed(response, template)
 
     def test_pages_is_only_author(self):
         """Страница /posts/<post_id>/edit/ доступна только автору."""
         response = self.authorized_author.get(
-            reverse('posts:post_edit', kwargs={'post_id': self.post.pk})
+            f'/posts/{self.post.pk}/edit/'
         )
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_pages_is_available_to_everyone(self):
-        """Проверка шаблонов для общедоступных адресов."""
+        """Проверка общедоступных адресов."""
         urls_status_code = {
-            reverse('posts:main'),
-            reverse('posts:group', kwargs={'slug': self.group.slug}),
-            reverse('posts:profile', kwargs={'username': self.user.username}),
-            reverse('posts:post_detail', kwargs={'post_id': self.post.pk}),
+            '/',
+            f'/group/{self.group.slug}/',
+            f'/profile/{self.user.username}/',
+            f'/posts/{self.post.pk}/',
         }
         for address in urls_status_code:
             with self.subTest(address=address):
-                response = self.guest_client.get(address, follow=True)
+                response = self.client.get(address, follow=True)
                 self.assertEqual(
                     response.status_code,
                     HTTPStatus.OK
                 )
 
     def test_pages_is_only_authorized(self):
-        """Проверка шаблонов для общедоступных адресов."""
+        """Проверка адресов только для авторизованных."""
         urls_status_code = {
-            reverse('posts:post_create'),
-            reverse('posts:add_comment', kwargs={'post_id': self.post.pk}),
+            '/create/',
+            f'/posts/{self.post.pk}/comment/',
         }
         for address in urls_status_code:
             with self.subTest(address=address):
@@ -98,3 +97,8 @@ class PostUrlTest(TestCase):
                     response.status_code,
                     HTTPStatus.OK
                 )
+
+    def test_pages_is_not_found(self):
+        """Проверка адресов для несуществующих страниц."""
+        response = self.client.get('/dawdawdwa')
+        self.assertEqual(response.status_code, 404)
