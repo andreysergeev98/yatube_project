@@ -92,7 +92,7 @@ class PostViewTest(TestCase):
         self.assertEqual(response.context.get('post').pk, self.post.pk)
 
     def test_home_page_show_correct_context(self):
-        """Шаблон home сформирован с правильным контекстом."""
+        """валидность типов формы из контекста при создании поста."""
         response = self.authorized_author.get(reverse(
             'posts:post_create'), kwargs={'post_id': self.post.pk})
         form_fields = {
@@ -105,7 +105,7 @@ class PostViewTest(TestCase):
                 self.assertIsInstance(form_field, expected)
 
     def test_home_page_show_correct_context_editpost(self):
-        """Шаблон home сформирован с правильным контекстом."""
+        """валидность типов формы из контекста при редактировании поста."""
         response = (self.authorized_author.get(reverse(
             'posts:post_edit', kwargs={'post_id': self.post.pk})))
         form_fields = {

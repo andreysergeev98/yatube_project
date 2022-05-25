@@ -38,25 +38,25 @@ class PostFormsTest(TestCase):
             'text': 'dwadawdawd',
             'group': self.group.pk,
         }
-
-        self.authorized_client.post(
+        response = self.authorized_client.post(
             reverse('posts:post_create'),
             data=form_data,
             follow=True
         )
-
         self.assertEqual(Post.objects.count(), posts_count + 1)
+        post = response.context['page_obj'][0]
+        self.assertTrue(
+            Post.objects.get(
+                pk=post.pk,
+                text=post.text,
+                group=post.group
+            )
+        )
         response = (self.authorized_author.get(reverse(
             'posts:post_edit', kwargs={'post_id': self.post.pk})))
         self.assertIn("text", response.context['form'].fields)
         self.assertIn("group", response.context['form'].fields)
         self.assertEqual(len(response.context['form'].fields), 2)
-        self.assertTrue(
-            Post.objects.filter(
-                group=self.group.pk,
-                text=self.post.text,
-            ).order_by('pk').last()
-        )
 
     def test_edit_post(self):
         posts_count = Post.objects.count()

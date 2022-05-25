@@ -100,4 +100,4 @@ class PostUrlTest(TestCase):
     def test_pages_is_not_found(self):
         """Проверка адресов для несуществующих страниц."""
         response = self.client.get('/dawdawdwa')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
