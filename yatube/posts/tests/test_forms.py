@@ -34,8 +34,9 @@ class PostFormsTest(TestCase):
 
     def test_create_post(self):
         posts_count = Post.objects.count()
+        text_post = 'dwadawdawd'
         form_data = {
-            'text': 'dwadawdawd',
+            'text': text_post,
             'group': self.group.pk,
         }
         response = self.authorized_client.post(
@@ -44,11 +45,9 @@ class PostFormsTest(TestCase):
             follow=True
         )
         self.assertEqual(Post.objects.count(), posts_count + 1)
-        post_create = response.context['page_obj'][0]
-        post_last = Post.objects.latest('pub_date')
-        self.assertEqual(post_last.pk, post_create.pk)
-        self.assertEqual(post_last.text, post_create.text)
-        self.assertEqual(post_last.group, post_create.group)
+        post_last = Post.objects.latest('id')
+        self.assertEqual(post_last.text, text_post)
+        self.assertEqual(post_last.group, self.group)
 
         response = (self.authorized_author.get(reverse(
             'posts:post_edit', kwargs={'post_id': self.post.pk})))
