@@ -1,13 +1,14 @@
+
 import shutil
 import tempfile
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from ..forms import PostForm
-from ..models import Group, Post
+from ..models import Comment, Group, Post
 
 User = get_user_model()
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
@@ -18,6 +19,7 @@ class PostFormsTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
         cls.user = User.objects.create_user(username='testnoname')
         cls.author = User.objects.create_user(username='auth')
         cls.group = Group.objects.create(
@@ -33,56 +35,78 @@ class PostFormsTest(TestCase):
 
         )
 
-        cls.form = PostForm()
-
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def setUp(self):
-        self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
         self.authorized_author = Client()
         self.authorized_author.force_login(self.author)
 
     def test_create_post(self):
-        tasks_count = Post.objects.count()
-        form_data = {
-            'author': self.author,
-            'text': 'Тестовый заголовок',
-            'group': f'{self.group.pk}',
-        }
+        posts_count = Post.objects.count()
 
-        self.authorized_client.post(
+        small_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x02\x00'
+            b'\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+            b'\x0A\x00\x3B'
+        )
+
+        uploaded = SimpleUploadedFile(
+            name='small.gif',
+            content=small_gif,
+            content_type='image/gif'
+        )
+
+        text_post = 'dwadawdawd'
+        form_data = {
+            'text': text_post,
+            'image': uploaded,
+            'group': self.group.pk,
+        }
+        response = self.authorized_client.post(
             reverse('posts:post_create'),
             data=form_data,
             follow=True
         )
-
-        self.assertEqual(Post.objects.count(), tasks_count + 1)
+        self.assertEqual(Post.objects.count(), posts_count + 1)
+        post_last = Post.objects.latest('id')
+        self.assertEqual(post_last.text, text_post)
+        self.assertEqual(post_last.group, self.group)
+        self.assertTrue(post_last.image)
 
         response = (self.authorized_author.get(reverse(
             'posts:post_edit', kwargs={'post_id': self.post.pk})))
-
         self.assertIn("text", response.context['form'].fields)
         self.assertIn("group", response.context['form'].fields)
-        self.assertEqual(len(response.context['form'].fields), 2)
-
-        self.assertTrue(
-            Post.objects.filter(
-                group=self.group.pk,
-                text='Тестовый заголовок',
-            ).exists()
-        )
+        self.assertEqual(len(response.context['form'].fields), 3)
 
     def test_edit_post(self):
-        tasks_count = Post.objects.count()
+        posts_count = Post.objects.count()
+        small_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x02\x00'
+            b'\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+            b'\x0A\x00\x3B'
+        )
+        uploaded = SimpleUploadedFile(
+            name='small_copy.gif',
+            content=small_gif,
+            content_type='image/gif'
+        )
+        text_edit = 'Тестовый заголовок отредактированный'
         form_data = {
-            'author': self.author,
-            'text': 'Тестовый заголовок отредактированный',
-            'group': f'{self.group.pk}',
+            'text': text_edit,
+            'group': self.group.pk,
+            'image': uploaded,
         }
 
         self.authorized_author.post(
@@ -93,16 +117,33 @@ class PostFormsTest(TestCase):
 
         response = (self.authorized_author.get(reverse(
             'posts:post_edit', kwargs={'post_id': self.post.pk})))
-
         self.assertIn("text", response.context['form'].fields)
         self.assertIn("group", response.context['form'].fields)
-        self.assertEqual(len(response.context['form'].fields), 2)
-
-        self.assertEqual(Post.objects.count(), tasks_count)
-
+        self.assertEqual(len(response.context['form'].fields), 3)
+        self.assertEqual(Post.objects.count(), posts_count)
         self.assertTrue(
-            Post.objects.filter(
+            Post.objects.get(
+                pk=self.post.pk,
+                text=text_edit,
                 group=self.group.pk,
-                text='Тестовый заголовок отредактированный',
-            ).exists()
+                image='posts/small_copy.gif'
+            )
         )
+
+    def test_create_comment_to_post(self):
+        comments_count = Comment.objects.count()
+        text_comment = 'тестовый комментарий новый'
+        form_data = {
+            'text': text_comment,
+            'post': self.post,
+        }
+        response = self.authorized_client.post(
+            reverse('posts:add_comment', kwargs={'post_id': self.post.pk}),
+            data=form_data,
+            follow=True
+        )
+        self.assertEqual(Comment.objects.count(), comments_count + 1)
+
+        response = (self.authorized_author.get(reverse(
+            'posts:post_detail', kwargs={'post_id': self.post.pk})))
+        self.assertEqual(len(response.context['comments']), 1)
