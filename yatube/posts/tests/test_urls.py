@@ -37,7 +37,6 @@ class PostUrlTest(TestCase):
         urls_status_code = {
             'posts/index.html': '/',
             'posts/group_list.html': f'/group/{self.group.slug}/',
-            
             'posts/post_detail.html': f'/posts/{self.post.pk}/',
         }
         urls_status_code_author = {
@@ -104,6 +103,3 @@ class PostUrlTest(TestCase):
         """Проверка адресов для несуществующих страниц."""
         response = self.client.get('/dawdawdwa')
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
-
-    def test_caching_page(self):
-        cache.clear()
