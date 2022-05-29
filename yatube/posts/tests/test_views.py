@@ -247,6 +247,7 @@ class PostViewTest(TestCase):
         self.assertEqual(Follow.objects.count(), follows_count)
 
     def test_followig_page(self):
+        """Страница Подписок на авторов."""
         (self.authorized_client.get(reverse(
             'posts:profile_follow',
             kwargs={'username': self.author.username})))
@@ -269,6 +270,7 @@ class PostViewTest(TestCase):
         self.assertEqual(len(response.context['page_obj']), 0)
 
     def test_caching_page(self):
+        """Проверка кэширование на главной странице."""
         cache.clear()
         response_old = self.client.get(reverse('posts:main'))
         form_data = {
