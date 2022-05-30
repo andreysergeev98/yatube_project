@@ -228,7 +228,9 @@ class PostViewTest(TestCase):
         for address in page_first:
             with self.subTest(address=address):
                 response = self.authorized_client.get(address)
-                self.assertTrue(response.context['page_obj'][0].image)
+                first_object = response.context['page_obj'][0]
+                post_image_0 = first_object.image
+                self.assertTrue(post_image_0)
 
         response = (self.authorized_client.get(reverse(
             'posts:post_detail', kwargs={'post_id': self.post.pk})))
@@ -271,22 +273,10 @@ class PostViewTest(TestCase):
 
     def test_caching_page(self):
         """Проверка кэширование на главной странице."""
-        cache.clear()
-        response_old = self.client.get(reverse('posts:main'))
-        form_data = {
-            'author': self.author,
-            'text': 'test post cache removed',
-            'group': self.group.pk,
-        }
-        self.authorized_author.post(
-            reverse('posts:post_create'),
-            data=form_data,
-            follow=True
-        )
-        response = self.client.get(reverse('posts:main'))
+        response_start = self.client.get(reverse('posts:main'))
         Post.objects.latest('id').delete()
-        (self.assertEqual(response.content,
-         self.client.get(reverse('posts:main')).content))
+        response = self.client.get(reverse('posts:main'))
+        self.assertEqual(response_start.content, response.content)
         cache.clear()
-        (self.assertEqual(response_old.content,
-         self.client.get(reverse('posts:main')).content))
+        response = self.client.get(reverse('posts:main'))
+        self.assertNotEquals(response_start.content, response.content)
