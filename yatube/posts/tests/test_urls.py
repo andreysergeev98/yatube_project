@@ -74,21 +74,12 @@ class PostUrlTest(TestCase):
         urls_status_code = {
             '/',
             f'/group/{self.group.slug}/',
+            f'/profile/{self.user.username}/',
             f'/posts/{self.post.pk}/',
         }
         for address in urls_status_code:
             with self.subTest(address=address):
                 response = self.client.get(address, follow=True)
-                self.assertEqual(
-                    response.status_code,
-                    HTTPStatus.OK
-                )
-        urls_status_code_auth = {
-            f'/profile/{self.user.username}/'
-        }
-        for address in urls_status_code_auth:
-            with self.subTest(address=address):
-                response = self.authorized_client.get(address, follow=True)
                 self.assertEqual(
                     response.status_code,
                     HTTPStatus.OK

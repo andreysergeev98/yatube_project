@@ -90,11 +90,12 @@ class PostViewTest(TestCase):
                 'posts:group', kwargs={'slug': self.group.slug}),
             'posts/post_detail.html': reverse(
                 'posts:post_detail', kwargs={'post_id': self.post.pk}),
+            'posts/profile.html': reverse(
+                'posts:profile', kwargs={'username': self.user.username}),
         }
         urls_status_code_auth = {
             'posts/create_post.html': reverse('posts:post_create'),
-            'posts/profile.html': reverse(
-                'posts:profile', kwargs={'username': self.user.username}),
+
         }
         urls_status_code_author = {
             'posts/create_post.html': reverse(
