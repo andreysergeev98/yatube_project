@@ -3,9 +3,6 @@ from http import HTTPStatus
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.test import Client, TestCase
-from django.test.client import RequestFactory
-
-from core.views import page_not_found, permission_denied, server_error
 
 from ..models import Group, Post
 

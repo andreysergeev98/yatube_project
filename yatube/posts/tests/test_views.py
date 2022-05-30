@@ -234,20 +234,12 @@ class PostViewTest(TestCase):
             'posts:post_detail', kwargs={'post_id': self.post.pk})))
         self.assertTrue(response.context['post'].image)
 
-    def test_follow_correct_suscribe(self):
+    def test_follow_correct_subscribe(self):
         follows_count = Follow.objects.count()
         (self.authorized_client.get(reverse(
             'posts:profile_follow',
             kwargs={'username': self.author.username})))
         self.assertEqual(Follow.objects.count(), follows_count + 1)
-
-        response = (self.authorized_author.get(reverse(
-            'posts:profile_follow',
-            kwargs={'username': self.author.username})))
-
-
-        # self.assertEqual(Follow.objects.count(), follows_count)
-
 
         (self.authorized_client.get(reverse(
             'posts:profile_unfollow',
