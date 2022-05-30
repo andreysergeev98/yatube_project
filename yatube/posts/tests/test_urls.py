@@ -74,7 +74,6 @@ class PostUrlTest(TestCase):
         urls_status_code = {
             '/',
             f'/group/{self.group.slug}/',
-            
             f'/posts/{self.post.pk}/',
         }
         for address in urls_status_code:
