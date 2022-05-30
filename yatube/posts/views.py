@@ -31,7 +31,6 @@ def group_posts(request, slug):
     return render(request, template, context)
 
 
-@login_required
 def profile(request, username):
     user = get_object_or_404(User, username=username)
     post_list = Post.objects.filter(author=user)
@@ -126,7 +125,7 @@ def add_comment(request, post_id):
 @login_required
 def follow_index(request):
     template = 'posts/follow.html'
-    related = Follow.objects.prefetch_related('user').filter(user=request.user)
+    related = Follow.objects.select_related('user').filter(user=request.user)
     post_list = []
     for follow in related:
         post_list += Post.objects.filter(author=follow.author)
