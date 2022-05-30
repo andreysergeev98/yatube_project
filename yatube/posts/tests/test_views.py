@@ -241,6 +241,14 @@ class PostViewTest(TestCase):
             kwargs={'username': self.author.username})))
         self.assertEqual(Follow.objects.count(), follows_count + 1)
 
+        response = (self.authorized_author.get(reverse(
+            'posts:profile_follow',
+            kwargs={'username': self.author.username})))
+
+
+        # self.assertEqual(Follow.objects.count(), follows_count)
+
+
         (self.authorized_client.get(reverse(
             'posts:profile_unfollow',
             kwargs={'username': self.author.username})))
