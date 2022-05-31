@@ -122,7 +122,6 @@ class PostFormsTest(TestCase):
         self.assertIn("group", response.context['form'].fields)
         self.assertEqual(len(response.context['form'].fields), 3)
         self.assertEqual(Post.objects.count(), posts_count)
-        
         self.assertTrue(
             Post.objects.get(
                 pk=self.post.pk,
