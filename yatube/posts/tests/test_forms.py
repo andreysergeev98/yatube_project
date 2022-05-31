@@ -1,4 +1,3 @@
-
 import shutil
 import tempfile
 
@@ -63,13 +62,14 @@ class PostFormsTest(TestCase):
             content=small_gif,
             content_type='image/gif'
         )
-
+        image_path = 'posts/' + str(uploaded)
         text_post = 'dwadawdawd'
         form_data = {
             'text': text_post,
             'image': uploaded,
             'group': self.group.pk,
         }
+
         response = self.authorized_client.post(
             reverse('posts:post_create'),
             data=form_data,
@@ -79,7 +79,7 @@ class PostFormsTest(TestCase):
         post_last = Post.objects.latest('id')
         self.assertEqual(post_last.text, text_post)
         self.assertEqual(post_last.group, self.group)
-        self.assertTrue(post_last.image)
+        self.assertTrue(post_last.image, image_path)
 
         response = (self.authorized_author.get(reverse(
             'posts:post_edit', kwargs={'post_id': self.post.pk})))
@@ -102,6 +102,7 @@ class PostFormsTest(TestCase):
             content=small_gif,
             content_type='image/gif'
         )
+        image_path = 'posts/' + str(uploaded)
         text_edit = 'Тестовый заголовок отредактированный'
         form_data = {
             'text': text_edit,
@@ -121,12 +122,13 @@ class PostFormsTest(TestCase):
         self.assertIn("group", response.context['form'].fields)
         self.assertEqual(len(response.context['form'].fields), 3)
         self.assertEqual(Post.objects.count(), posts_count)
+        
         self.assertTrue(
             Post.objects.get(
                 pk=self.post.pk,
                 text=text_edit,
                 group=self.group.pk,
-                image='posts/small_copy.gif'
+                image=image_path
             )
         )
 
@@ -135,7 +137,6 @@ class PostFormsTest(TestCase):
         text_comment = 'тестовый комментарий новый'
         form_data = {
             'text': text_comment,
-            'post': self.post,
         }
         response = self.authorized_client.post(
             reverse('posts:add_comment', kwargs={'post_id': self.post.pk}),
@@ -147,3 +148,7 @@ class PostFormsTest(TestCase):
         response = (self.authorized_author.get(reverse(
             'posts:post_detail', kwargs={'post_id': self.post.pk})))
         self.assertEqual(len(response.context['comments']), 1)
+
+        comment_last = Comment.objects.latest('id')
+
+        self.assertEqual(comment_last.text, text_comment)

@@ -23,6 +23,7 @@ class PostViewTest(TestCase):
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
         cls.user = User.objects.create_user(username='testnoname')
         cls.author = User.objects.create_user(username='auth')
+        cls.user_follow = User.objects.create_user(username='user_follow')
         cls.small_gif = (
             b'\x47\x49\x46\x38\x39\x61\x02\x00'
             b'\x01\x00\x80\x00\x00\x00\x00\x00'
@@ -47,6 +48,11 @@ class PostViewTest(TestCase):
             title='Тестовая группа 2',
             slug='test-slug-two',
             description='Тестовое описание 2',
+        )
+
+        cls.follow = Follow.objects.create(
+            user=cls.author,
+            author=cls.user_follow
         )
 
         cls.post_test = Post.objects.create(
@@ -241,13 +247,21 @@ class PostViewTest(TestCase):
         follows_count = Follow.objects.count()
         (self.authorized_client.get(reverse(
             'posts:profile_follow',
-            kwargs={'username': self.author.username})))
+            kwargs={'username': self.user_follow.username})))
         self.assertEqual(Follow.objects.count(), follows_count + 1)
+        follow_last = Follow.objects.latest('id')
+        self.assertEqual(follow_last.author, self.user_follow)
+        self.assertEqual(follow_last.user, self.user)
 
-        (self.authorized_client.get(reverse(
+    def test_follow_correct_unsubscribe(self):
+        follows_count = Follow.objects.count()
+        (self.authorized_author.get(reverse(
             'posts:profile_unfollow',
-            kwargs={'username': self.author.username})))
-        self.assertEqual(Follow.objects.count(), follows_count)
+            kwargs={'username': self.user_follow.username})))
+        self.assertEqual(Follow.objects.count(), follows_count - 1)
+        self.assertFalse(Follow.objects.filter(
+            user=self.user, author=self.user_follow).exists()
+        )
 
     def test_followig_page(self):
         """Страница Подписок на авторов."""
