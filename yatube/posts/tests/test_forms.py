@@ -147,7 +147,6 @@ class PostFormsTest(TestCase):
         response = (self.authorized_author.get(reverse(
             'posts:post_detail', kwargs={'post_id': self.post.pk})))
         self.assertEqual(len(response.context['comments']), 1)
-
         comment_last = Comment.objects.latest('id')
-
         self.assertEqual(comment_last.text, text_comment)
+        self.assertEqual(comment_last.post.pk, self.post.pk)
